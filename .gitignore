@@ -8,7 +8,6 @@ node_modules/
 coverage/
 references/
 PROMPT-MESTRE.md
-AGENTS.md
 docs/implementation-plan.md
 *.pen
 *.pdf
