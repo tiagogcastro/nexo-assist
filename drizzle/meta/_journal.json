@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793546766665,
+      "tag": "0000_typical_manta",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793546935462,
+      "tag": "0001_rich_vulture",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793547698016,
+      "tag": "0002_clean_spitfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793547962986,
+      "tag": "0003_yellow_lifeguard",
+      "breakpoints": true
+    }
+  ]
+}

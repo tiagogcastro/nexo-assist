@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "tickets_active_problem_unique_idx" ON "tickets" USING btree ("creator_id","normalized_problem") WHERE "tickets"."status" IN ('open', 'awaiting_analyst', 'approved');
