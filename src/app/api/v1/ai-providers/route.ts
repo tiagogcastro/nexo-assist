@@ -8,6 +8,8 @@ const schema = z.object({
   name: z.string().trim().min(2).max(80),
   apiKey: z.string().trim().min(10),
   modelId: z.string().trim().min(2).max(120),
+  priceInputUsd: z.number().finite().min(0).max(2000).optional(),
+  priceOutputUsd: z.number().finite().min(0).max(2000).optional(),
 });
 
 export async function GET() {

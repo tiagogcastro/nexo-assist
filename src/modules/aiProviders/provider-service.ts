@@ -66,6 +66,8 @@ export async function getActiveProvider() {
         kind: aiProviders.kind,
         encryptedKey: aiProviders.encryptedKey,
         modelId: aiModels.modelId,
+        priceInputPerMillion: aiModels.priceInputPerMillion,
+        priceOutputPerMillion: aiModels.priceOutputPerMillion,
       })
       .from(aiModels)
       .innerJoin(aiProviders, eq(aiModels.providerId, aiProviders.id))
@@ -78,7 +80,13 @@ export async function getActiveProvider() {
         return key;
       }
 
-      return success({ kind: row[0].kind, modelId: row[0].modelId, apiKey: key.data });
+      return success({
+        kind: row[0].kind,
+        modelId: row[0].modelId,
+        apiKey: key.data,
+        priceInputPerMillion: row[0].priceInputPerMillion,
+        priceOutputPerMillion: row[0].priceOutputPerMillion,
+      });
     }
 
     if (process.env.DEEPSEEK_API_KEY) {
@@ -86,6 +94,8 @@ export async function getActiveProvider() {
         kind: 'deepseek',
         modelId: 'deepseek-flash',
         apiKey: process.env.DEEPSEEK_API_KEY,
+        priceInputPerMillion: null,
+        priceOutputPerMillion: null,
       });
     }
 
@@ -127,6 +137,8 @@ export async function saveProvider({
   name,
   apiKey,
   modelId,
+  priceInputUsd,
+  priceOutputUsd,
   requestId,
 }: {
   userId: string;
@@ -134,6 +146,8 @@ export async function saveProvider({
   name: string;
   apiKey: string;
   modelId: string;
+  priceInputUsd?: number;
+  priceOutputUsd?: number;
   requestId: string;
 }) {
   const permitted = await requirePermission({ userId, permission: 'providers:manage' });
@@ -161,7 +175,15 @@ export async function saveProvider({
         .returning();
       const [model] = await tx
         .insert(aiModels)
-        .values({ providerId: provider.id, modelId, active: true })
+        .values({
+          providerId: provider.id,
+          modelId,
+          active: true,
+          priceInputPerMillion:
+            priceInputUsd === undefined ? null : Math.round(priceInputUsd * 1_000_000),
+          priceOutputPerMillion:
+            priceOutputUsd === undefined ? null : Math.round(priceOutputUsd * 1_000_000),
+        })
         .returning();
       await tx.insert(auditLogs).values({
         actorId: userId,
@@ -205,16 +227,14 @@ export async function removeProvider({
 
       await tx.delete(aiModels).where(eq(aiModels.providerId, providerId));
       await tx.delete(aiProviders).where(eq(aiProviders.id, providerId));
-      await tx
-        .insert(auditLogs)
-        .values({
-          actorId: userId,
-          action: 'provider.remove',
-          resourceType: 'ai_provider',
-          resourceId: providerId,
-          requestId,
-          outcome: 'committed',
-        });
+      await tx.insert(auditLogs).values({
+        actorId: userId,
+        action: 'provider.remove',
+        resourceType: 'ai_provider',
+        resourceId: providerId,
+        requestId,
+        outcome: 'committed',
+      });
       return success({ providerId });
     });
   } catch {

@@ -12,7 +12,7 @@ Ticket mutations are two-phase: a validated draft is stored, shown to the employ
 
 `Browser → Next.js route → authenticated actor → domain service → PostgreSQL`. A chat request additionally reserves an AI usage record, constructs a per-request Mastra agent, streams observable events, and stores a final message only while the conversation is agent-active. AI tools can search help articles, read the actor's tickets, prepare drafts, and request handoff. They cannot confirm ticket writes.
 
-Provider credentials use AES-256-GCM with a server-only environment key. Administrators test a credential against the provider's models API before activation. If no database provider is active, an optional DeepSeek environment key is used. Unknown token counts remain null. Usage, agent decisions, and audit events are separate records.
+Provider credentials use AES-256-GCM with a server-only environment key. Administrators test a credential against the provider's models API before activation. If no database provider is active, an optional DeepSeek environment key is used. Unknown token counts remain null. Administrators may set USD prices per million input and output tokens for a model; estimated cost is calculated only when both prices and observed token counts are present. Usage, agent decisions, and audit events are separate records.
 
 The help center uses PostgreSQL full-text search. An analyst console polls for changes rather than holding a WebSocket. The ticket service has its own contracts and outage simulation, but shares deployment and database with the monolith.
 

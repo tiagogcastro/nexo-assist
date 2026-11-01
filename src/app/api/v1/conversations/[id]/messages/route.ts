@@ -200,6 +200,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           inputTokens: usage?.inputTokens ?? null,
           outputTokens: usage?.outputTokens ?? null,
           latencyMs: Date.now() - startedAt,
+          priceInputPerMillion: provider.data.priceInputPerMillion,
+          priceOutputPerMillion: provider.data.priceOutputPerMillion,
         });
         controller.enqueue(event('done', { messageId: saved?.data?.id ?? null }));
         controller.close();

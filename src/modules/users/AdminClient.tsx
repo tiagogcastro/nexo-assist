@@ -23,7 +23,14 @@ type User = {
 };
 type Invitation = { id: string; email: string; expiresAt: string; usedAt: string | null };
 type Provider = { id: string; kind: string; name: string; active: boolean; key: string };
-type Model = { id: string; providerId: string; modelId: string; active: boolean };
+type Model = {
+  id: string;
+  providerId: string;
+  modelId: string;
+  active: boolean;
+  priceInputPerMillion: number | null;
+  priceOutputPerMillion: number | null;
+};
 type Usage = {
   day: string;
   provider: string;
@@ -97,6 +104,8 @@ export function AdminClient({ section, actorName }: { section: string; actorName
   const [providerName, setProviderName] = useState('DeepSeek');
   const [modelId, setModelId] = useState('deepseek-flash');
   const [apiKey, setApiKey] = useState('');
+  const [priceInputUsd, setPriceInputUsd] = useState('');
+  const [priceOutputUsd, setPriceOutputUsd] = useState('');
   const usersQuery = useQuery({
     queryKey: ['adminUsers'],
     queryFn: () => api<{ users: User[]; invitations: Invitation[] }>('/api/v1/users'),
@@ -210,6 +219,8 @@ export function AdminClient({ section, actorName }: { section: string; actorName
       name: providerName,
       modelId,
       apiKey,
+      ...(priceInputUsd ? { priceInputUsd: Number(priceInputUsd) } : {}),
+      ...(priceOutputUsd ? { priceOutputUsd: Number(priceOutputUsd) } : {}),
     });
     setNotice(result.error ?? 'Modelo ativo atualizado. A chave foi protegida no servidor.');
     if (!result.error) {
@@ -427,7 +438,11 @@ export function AdminClient({ section, actorName }: { section: string; actorName
                     <span>
                       <strong>{provider.name}</strong>
                       <small>
-                        {provider.kind} · {provider.key}
+                        {provider.kind} ·{' '}
+                        {providersQuery.data?.data?.models.find(
+                          (model) => model.providerId === provider.id,
+                        )?.modelId ?? 'Sem modelo'}{' '}
+                        · {provider.key}
                       </small>
                     </span>
                     <span>
@@ -482,6 +497,34 @@ export function AdminClient({ section, actorName }: { section: string; actorName
                     required
                   />
                 </label>
+                <div className="form-two">
+                  <label>
+                    USD por 1 milhão de tokens de entrada
+                    <input
+                      type="number"
+                      min="0"
+                      max="2000"
+                      step="0.000001"
+                      value={priceInputUsd}
+                      onChange={(event) => setPriceInputUsd(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    USD por 1 milhão de tokens de saída
+                    <input
+                      type="number"
+                      min="0"
+                      max="2000"
+                      step="0.000001"
+                      value={priceOutputUsd}
+                      onChange={(event) => setPriceOutputUsd(event.target.value)}
+                    />
+                  </label>
+                </div>
+                <small>
+                  Preços opcionais para estimativa. Confira a tabela oficial do provedor antes de
+                  preencher.
+                </small>
                 <div className="admin-form-actions">
                   <button type="button" className="secondary-button" onClick={testProvider}>
                     Testar conexão

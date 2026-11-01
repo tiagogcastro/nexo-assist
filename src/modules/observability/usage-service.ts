@@ -58,17 +58,31 @@ export async function finishAiRequest({
   inputTokens,
   outputTokens,
   latencyMs,
+  priceInputPerMillion,
+  priceOutputPerMillion,
 }: {
   usageId: string;
   status: string;
   inputTokens: number | null;
   outputTokens: number | null;
   latencyMs: number;
+  priceInputPerMillion?: number | null;
+  priceOutputPerMillion?: number | null;
 }) {
+  const estimatedCostUsdMicros =
+    inputTokens === null ||
+    outputTokens === null ||
+    priceInputPerMillion == null ||
+    priceOutputPerMillion == null
+      ? null
+      : Math.round(
+          (inputTokens * priceInputPerMillion + outputTokens * priceOutputPerMillion) / 1_000_000,
+        );
+
   try {
     await db
       .update(aiUsage)
-      .set({ status, inputTokens, outputTokens, latencyMs })
+      .set({ status, inputTokens, outputTokens, latencyMs, estimatedCostUsdMicros })
       .where(eq(aiUsage.id, usageId));
   } catch {
     console.error('Failed to persist AI usage', { usageId });
